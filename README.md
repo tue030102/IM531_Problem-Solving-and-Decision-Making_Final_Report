@@ -1,5 +1,7 @@
-# EGE-UNet
-This is the official code repository for "EGE-UNet: an Efficient Group Enhanced UNet for skin lesion segmentation", which is accpeted by *26th International Conference on Medical Image Computing and Computer Assisted Intervention (MICCAI2023)* as a regular paper!
+# EGE-UNet for Retinal Vessel Segmentation (Final Project)
+
+This repository contains the source code and experimental results for the final course project.
+The project applies the EGE-UNet architecture to the task of retinal vessel segmentation on the FIVES dataset.
 
 **0. Main Environments**
 - python 3.8
