@@ -33,4 +33,9 @@ python train.py
 ```
 
 **3. Obtain the outputs.**
+
 - After trianing, you could obtain the outputs in './results/'
+## Final Results
+See: `results/readme.md`  
+(Outputs/plots are in `results/egeunet_fives_STR2_Tuesday_30_December_2025_02h_01m_28s/`)
+   
