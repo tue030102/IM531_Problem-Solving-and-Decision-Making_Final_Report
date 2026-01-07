@@ -1,0 +1,19 @@
+# Python cache
+__pycache__/
+**/__pycache__/
+*.pyc
+
+# Virtual env
+ege_env/
+.venv/
+
+# Dataset (do not upload)
+data/
+data/fives/
+
+# Large / logs
+*.pth
+results/**/checkpoints/
+results/**/log/
+results/**/summary/
+results/**/events.out.tfevents*

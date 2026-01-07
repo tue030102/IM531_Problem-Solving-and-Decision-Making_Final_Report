@@ -33,7 +33,9 @@ class NPY_datasets(Dataset):
     def __getitem__(self, indx):
         img_path, msk_path = self.data[indx]
         img = np.array(Image.open(img_path).convert('RGB'))
-        msk = np.expand_dims(np.array(Image.open(msk_path).convert('L')), axis=2) / 255
+        msk = np.array(Image.open(msk_path).convert('L'), dtype=np.float32)
+        msk = (msk > 127).astype(np.float32)   # 0/1 
+        msk = np.expand_dims(msk, axis=2)
         img, msk = self.transformer((img, msk))
         return img, msk
 

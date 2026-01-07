@@ -4,64 +4,68 @@ from utils import *
 from datetime import datetime
 
 class setting_config:
-    """
-    the config of training setting.
-    """
-
     network = 'egeunet'
     model_config = {
-        'num_classes': 1, 
-        'input_channels': 3, 
-        'c_list': [8,16,24,32,48,64], 
+        'num_classes': 1,
+        'input_channels': 3,
+        'c_list': [8,16,24,32,48,64],
         'bridge': True,
         'gt_ds': True,
     }
 
-    datasets = 'isic17' 
-    if datasets == 'isic18':
+    datasets = 'fives'
+    if datasets == 'fives':
+        data_path = './data/fives/'
+    elif datasets == 'isic18':
         data_path = './data/isic2018/'
     elif datasets == 'isic17':
         data_path = './data/isic2017/'
     else:
         raise Exception('datasets in not right!')
 
-    criterion = GT_BceDiceLoss(wb=1, wd=1)
+    # loss cho train (deep supervision)
+    criterion = GT_FocalTverskyLoss(alpha=0.3, beta=0.7, gamma=0.75)
 
-    pretrained_path = './pre_trained/'
-    num_classes = 1
-    input_size_h = 256
-    input_size_w = 256
-    input_channels = 3
-    distributed = False
-    local_rank = -1
-    num_workers = 0
+    patch_size = 512
+    stride = 256
+
+    input_size_h = 512
+    input_size_w = 512
+
     seed = 42
-    world_size = None
-    rank = None
-    amp = False
+    amp = True
     gpu_id = '0'
-    batch_size = 8
-    epochs = 300
-
-    work_dir = 'results/' + network + '_' + datasets + '_' + datetime.now().strftime('%A_%d_%B_%Y_%Hh_%Mm_%Ss') + '/'
-
+    batch_size = 2
+    epochs = 200
+    work_dir = 'results/' + network + '_' + datasets + '_STR2_' + datetime.now().strftime('%A_%d_%B_%Y_%Hh_%Mm_%Ss') + '/'
+    force_new = True
+    # Windows ổn định: để 0
+    num_workers = 0
+    pin_memory = False
+    persistent_workers = False
+    # logging/eval
     print_interval = 20
-    val_interval = 30
-    save_interval = 100
-    threshold = 0.5
+    val_interval = 1
+    save_interval = 1
+    threshold = 0.40
+    threshold_sweep = [0.35, 0.38, 0.40, 0.42, 0.45]
 
     train_transformer = transforms.Compose([
         myNormalize(datasets, train=True),
+        myRandomCropVesselAware(crop_h=512, crop_w=512, p=1.0, vessel_prob=0.8),
         myToTensor(),
         myRandomHorizontalFlip(p=0.5),
         myRandomVerticalFlip(p=0.5),
-        myRandomRotation(p=0.5, degree=[0, 360]),
-        myResize(input_size_h, input_size_w)
+        myRandomRotation(p=0.2, degree=[-15, 15]),
+        myBinarizeMask(),
     ])
+
+
     test_transformer = transforms.Compose([
         myNormalize(datasets, train=False),
         myToTensor(),
-        myResize(input_size_h, input_size_w)
+        # not resize
+        myBinarizeMask(),
     ])
 
     opt = 'AdamW'
@@ -130,8 +134,8 @@ class setting_config:
         gamma = 0.99 #  – Multiplicative factor of learning rate decay.
         last_epoch = -1 # – The index of last epoch. Default: -1.
     elif sch == 'CosineAnnealingLR':
-        T_max = 50 # – Maximum number of iterations. Cosine function period.
-        eta_min = 0.00001 # – Minimum learning rate. Default: 0.
+        T_max = epochs # – Maximum number of iterations. Cosine function period.
+        eta_min = 1e-6 # – Minimum learning rate. Default: 0.
         last_epoch = -1 # – The index of last epoch. Default: -1.  
     elif sch == 'ReduceLROnPlateau':
         mode = 'min' # – One of min, max. In min mode, lr will be reduced when the quantity monitored has stopped decreasing; in max mode it will be reduced when the quantity monitored has stopped increasing. Default: ‘min’.
